@@ -2,6 +2,14 @@ name: Build Python package and publish to PyPi
 
 on:
   workflow_call:
+    inputs:
+      publish:
+        description: >
+          If true, publishes to the applicable (language-dependent)
+          package repositories
+        type: boolean
+        default: true
+        required: false
     secrets:
       actor_token:
         description: |
@@ -20,7 +28,7 @@ jobs:
   ref-python-package-pypi:
     uses: ./.github/workflows/.python-package-pypi.yml
     with:
-      publish: startsWith( github.ref, 'refs/tags/v')
+      publish: ${{ startsWith( github.ref, 'refs/tags/v') || inputs.publish }}
     secrets:
       actor_token: ${{ secrets.KERRYS_LEARNING_LAB_TOKEN }}
 
