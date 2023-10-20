@@ -9,4 +9,6 @@ jobs:
     with:
       publish: ${{ startsWith( github.ref, 'refs/tags/v') }}
     secrets:
+      actor_name: ${{ secrets.KERRYS_LEARNING_LAB_ACTOR }}
       actor_token: ${{ secrets.KERRYS_LEARNING_LAB_TOKEN }}
+      actor_email: ${{ secrets.KERRYS_LEARNING_LAB_EMAIL }}
