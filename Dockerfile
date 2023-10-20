@@ -1,6 +1,6 @@
 # NOTE: Matches default Python version of Ubuntu 22.04
-ARG PYTHON_VERSION=3.10
-ARG POETRY_VERSION=1.4.2
+ARG PYTHON_VERSION=3.11.6
+ARG POETRY_VERSION=1.6
 FROM python:${PYTHON_VERSION} as production
 
 RUN apt-get update && \
