@@ -21,7 +21,6 @@ jobs:
     name: Build a python package (using Poetry) and push to PyPi
     permissions:
       id-token: write
-    needs: prerequisites
     steps:
 
       - name: Checkout repository

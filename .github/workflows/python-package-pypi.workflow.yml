@@ -27,6 +27,9 @@ jobs:
 
   ref-python-package-pypi:
     uses: ./.github/workflows/.python-package-pypi.yml
+    needs:
+      - ref-prerequisites
+      - ref-check-repo-settings
     with:
       publish: ${{ startsWith( github.ref, 'refs/tags/v') || inputs.publish }}
     secrets:
@@ -35,6 +38,7 @@ jobs:
   ref-bump-version:
     uses: kerrys-learning-lab/.github/.github/workflows/.bump-version.yml@main
     needs:
+      - ref-prerequisites
       - ref-check-repo-settings
       - ref-python-package-pypi
     secrets:
