@@ -7,6 +7,6 @@ jobs:
   ref-python-package-pypi:
     uses: ./.github/workflows/python-package-pypi.workflow.yml
     with:
-      publish: true
+      publish: ${{ startsWith( github.ref, 'refs/tags/v') || inputs.publish }}
     secrets:
       actor_token: ${{ secrets.KERRYS_LEARNING_LAB_TOKEN }}
