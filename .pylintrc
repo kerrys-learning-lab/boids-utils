@@ -1,0 +1,49 @@
+[MASTER]
+ignore-paths=^test/.*$
+
+[FORMAT]
+max-line-length=120
+
+# Regexp for a line that is allowed to be longer than the limit.
+#
+# Explanation for each section:
+#    https... - From original .pylintrc
+#    LOGGER  - allows long single-line logging statements
+#    raise    - allows long single-line Exception messages
+#    help     - allows long single-line help messages (for argparse)
+ignore-long-lines=^\s*(# )?<?https?://\S+>?$|LOGGER.*|raise|help=
+
+# Allow the body of an if to be on the same line as the test if there is no
+# else.
+single-line-if-stmt=no
+
+[MESSAGES CONTROL]
+disable=logging-fstring-interpolation,
+        too-few-public-methods
+
+[VARIABLES]
+
+# A regular expression matching the name of dummy variables (i.e. expectedly
+# not used).
+dummy-variables-rgx=_$|dummy
+
+# List of additional names supposed to be defined in builtins. Remember that
+# you should avoid to define new builtins when possible.
+additional-builtins=
+
+# List of strings which can identify a callback function by name. A callback
+# name must start or end with one of those strings.
+callbacks=cb_,_cb
+
+[REPORTS]
+
+# Set the output format. Available formats are text, parseable, colorized, msvs
+# (visual studio) and html. You can also give a reporter class, eg
+# mypackage.mymodule.MyReporterClass.
+output-format=colorized
+
+# Tells whether to display a full report or only the messages
+reports=no
+
+# Activate the evaluation score
+score=no

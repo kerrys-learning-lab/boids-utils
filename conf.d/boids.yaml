@@ -1,0 +1,62 @@
+simulation:
+  rate: 1
+
+application:
+  collision_indicator: false
+  velocity_indicator: true
+  view_indicator: true
+
+world:
+  defaults:
+    width:  800
+    height: 600
+  limits:
+    width:
+      min:   160
+      max:  1200
+    height:
+      min:  120
+      max:  900
+
+boids:
+  defaults:
+    quantity: 0
+    avoid_walls: true
+    normalize_velocity: true
+    view_range: 75
+    view_angle: 120
+    collision_avoidance_range: 75
+    speed_limits:
+      min:  1
+      max: 60
+
+    collision_avoidance_weight: 0.3
+    velocity_matching_weight: 0.5
+    velocity_normalization_weight: 0.5
+    flock_centering_weight: 0.5
+  limits:
+    quantity:
+      min:   0
+      max: 100
+    view_range:
+      min:   1
+      max: 250
+    view_angle:
+      min:   0
+      max: 359
+    speed:
+      min:   1
+      max: 100
+  boids:
+    - position:
+        x: 300
+        y: 300
+      velocity:
+        x: 15
+        y: 15
+    - position:
+        x: 450
+        y: 250
+      velocity:
+        x: -20
+        y: 30

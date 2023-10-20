@@ -1,0 +1,43 @@
+name: Build Python package and publish to PyPi
+
+on:
+  workflow_call:
+    inputs:
+      publish:
+        description: >
+          If true, publishes to the applicable (language-dependent)
+          package repositories
+        type: boolean
+        default: true
+        required: false
+    secrets:
+      actor_token:
+        description: |
+          GITHUB_TOKEN or PAT authorized to make changes to the repository
+        required: true
+
+jobs:
+  ref-prerequisites:
+    uses: ./.github/workflows/.prerequisites.yml
+
+  ref-check-repo-settings:
+    uses: kerrys-learning-lab/.github/.github/workflows/.check-repo-settings.yml@main
+    secrets:
+      actor_token: ${{ secrets.actor_token }}
+
+  ref-bump-version:
+    uses: kerrys-learning-lab/.github/.github/workflows/.bump-version.yml@main
+    needs:
+      - ref-build-and-push-image
+      - ref-check-repo-settings
+    secrets:
+      actor_name: ${{ secrets.actor_name }}
+      actor_token: ${{ secrets.actor_token }}
+      actor_email: ${{ secrets.actor_email }}
+
+  ref-python-package-pypi:
+    uses: ./.github/workflows/.python-package-pypi.yml
+    with:
+      publish: ${{ inputs.publish }}
+    secrets:
+      actor_token: ${{ secrets.KERRYS_LEARNING_LAB_TOKEN }}

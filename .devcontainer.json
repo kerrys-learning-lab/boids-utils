@@ -1,0 +1,20 @@
+{
+	"name": "Ubuntu",
+	"dockerComposeFile": [
+		"../docker-compose.yml"
+	],
+	"workspaceFolder": "/opt/boids-utils",
+	"remoteUser": "python",
+	"service": "boids-utils",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"github.remotehub",
+				"github.vscode-pull-request-github",
+				"ms-azuretools.vscode-docker",
+				"ms-python.python",
+				"ms-python.pylint"
+			]
+		}
+	}
+}

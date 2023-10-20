@@ -1,0 +1,67 @@
+elasticsearch:
+  server: http://elasticsearch.boids:9200
+
+  indexes:
+    boids.sessions:
+      alias: session_configuration
+      mappings:
+        properties:
+          title:
+            type: text
+            fields:
+              keyword:
+                type: keyword
+                ignore_above: 256
+          uuid:
+            type: keyword
+          state:
+            type: keyword
+          num_boids:
+            type: integer
+          url:
+            type: keyword
+          next_states:
+            type: keyword
+          world:
+            type: object
+            properties:
+              width:
+                type: integer
+              height:
+                type: integer
+          behavior:
+            type: object
+            properties:
+              avoid_walls:
+                type: boolean
+              normalize_velocity:
+                type: boolean
+              view_range:
+                type: long
+              view_angle:
+                type: long
+              speed_limits:
+                type: object
+                properties:
+                  min:
+                    type: integer
+                  max:
+                    type: integer
+          created:
+            type: date
+            format: strict_date_time_no_millis
+          modified:
+            type: date
+            format: strict_date_time_no_millis
+  search-templates:
+    boids.active-sessions:
+      template:
+        script:
+          lang: mustache
+          source:
+            query:
+              bool:
+                must_not:
+                  - term:
+                      state:
+                        value: ARCHIVED
