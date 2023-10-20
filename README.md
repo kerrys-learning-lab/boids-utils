@@ -16,4 +16,6 @@ TBP
 ```
 $ cd /opt/boids-utils
 $ PYTHONPATH=src:${PYTHONPATH} pytest test
+
+$ PYTHONPATH=src:${PYTHONPATH} pylint src
 ```
