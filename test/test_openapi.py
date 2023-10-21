@@ -6,7 +6,7 @@ import boids_utils.openapi
 LOGGER = logging.getLogger(__name__)
 
 @pytest.mark.asyncio
-async def test_init(test_config):
+async def test_init(test_openapi_spec):
     uut = boids_utils.openapi.Spec('/etc/boids-api/openapi.yaml')
 
     session_config = uut._raw['components']['schemas']['SessionConfiguration']
@@ -15,7 +15,7 @@ async def test_init(test_config):
     assert 'width' in session_config['properties']['world']['properties']
 
 @pytest.mark.asyncio
-async def test_getitem(test_config):
+async def test_getitem(test_openapi_spec):
     uut = boids_utils.openapi.Spec('/etc/boids-api/openapi.yaml')
 
     session_config = uut['#/components/schemas/SessionConfiguration']
@@ -24,7 +24,7 @@ async def test_getitem(test_config):
     assert 'state' in session_config['properties']
 
 @pytest.mark.asyncio
-async def test_getitem_invalid_root(test_config):
+async def test_getitem_invalid_root(test_openapi_spec):
     uut = boids_utils.openapi.Spec('/etc/boids-api/openapi.yaml')
 
     with pytest.raises(RuntimeError):
@@ -34,7 +34,7 @@ async def test_getitem_invalid_root(test_config):
       uut['/components/foo']
 
 @pytest.mark.asyncio
-async def test_expand_defaults(test_config):
+async def test_expand_defaults(test_openapi_spec):
     uut = boids_utils.openapi.Spec('/etc/boids-api/openapi.yaml')
 
     actual = uut._expand_defaults({}, uut['#/components/schemas/BehaviorConfiguration'])
@@ -43,7 +43,7 @@ async def test_expand_defaults(test_config):
     assert actual['speed_limits']['max'] == 100
 
 @pytest.mark.asyncio
-async def test_expand_defaults_partial(test_config):
+async def test_expand_defaults_partial(test_openapi_spec):
     uut = boids_utils.openapi.Spec('/etc/boids-api/openapi.yaml')
 
     actual = uut._expand_defaults({'avoid_walls': False, 'speed_limits': {'min': 2}}, uut['#/components/schemas/BehaviorConfiguration'])

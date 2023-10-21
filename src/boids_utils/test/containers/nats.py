@@ -1,10 +1,12 @@
 import asyncio
+import logging
 import nats
 
 import testcontainers.core.container
 import testcontainers.core.waiting_utils
 import nats.errors
 
+LOGGER = logging.getLogger(__name__)
 
 class NATSContainer(testcontainers.core.container.DockerContainer):
     """
@@ -37,6 +39,8 @@ class NATSContainer(testcontainers.core.container.DockerContainer):
         asyncio.run(nats.connect(self.get_server_url()))
 
     def start(self) -> "NATSContainer":
+        """ Starts NATS, waits for the broker to be 'up' and returns the handle
+            to the container """
         command = f'-p {self.port} --trace'
         self.with_command(command)
         super().start()

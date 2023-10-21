@@ -96,6 +96,8 @@ class ElasticSearchContainer(DockerContainer):
         return f'http://{host}:{port}'
 
     def start(self) -> "ElasticSearchContainer":
+        """ Starts Elasticsearch, waits for the container to be 'up' and returns
+            the handle to the container """
         super().start()
         self._connect()
         return self
