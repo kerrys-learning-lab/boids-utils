@@ -33,7 +33,7 @@ class PubsubTopicManager:
         LOGGER.debug(f'Using NATS URL: {self.url}')
         self.nats_client = await nats.connect(self.url,
                                               error_cb=self._on_nats_error)
-        LOGGER.info(f'Connect to NATS URL: {self.url}')
+        LOGGER.info(f'Connected to NATS URL: {self.url}')
 
         for publisher in self._publishers.values():
             await publisher.on_connected(self.nats_client)
@@ -56,6 +56,7 @@ class PubsubTopicManager:
                 await consumer.disconnect()
 
             await self.nats_client.drain()
+            await self.nats_client.close()
 
         self.nats_client = None
         self._event.clear()

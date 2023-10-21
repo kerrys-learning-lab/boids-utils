@@ -77,15 +77,6 @@ class Index:
         """
         Returns OpenAPI model objects from the Elasticsearch documents in the
         given search results.
-
-        results:    The 'raw' Elasticsearch results from which the document is to be
-                    extracted
-        cls:        The OpenAPI model class (type) to return
-        msg:        A message fragment to be used under error conditions
-        pagination: If present, should contain (at least) the Pagination request
-                    'limit' (page size) parameter.  This function will then use the
-                    result counts to calculate total pages available using the same
-                    page size.
         """
         pagination = pagination or boidsapi.model.Pagination(offset=boids_utils.openapi.instance.default_offset,
                                                              limit=boids_utils.openapi.instance.default_limit)

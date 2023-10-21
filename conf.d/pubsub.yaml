@@ -1,7 +1,0 @@
-pubsub:
-  url: nats://nats:4222
-
-  clients:
-      gateway:
-        publishes:
-          - boids.sessions

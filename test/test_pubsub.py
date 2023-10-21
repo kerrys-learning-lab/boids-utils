@@ -22,14 +22,11 @@ class Consumer(boids_utils.pubsub.ConsumerCallback):
 
 @pytest.mark.asyncio
 @pytest.mark.timeout(60)
-async def test_topic_blocking(test_config):
-
-    await boids_utils.pubsub.connect()
-
+async def test_topic(test_pubsub_broker: boids_utils.pubsub, event_loop):
     listener = Consumer()
-    boids_utils.pubsub.add_topic_callback(TEST_TOPIC, listener)
+    test_pubsub_broker.add_topic_callback(TEST_TOPIC, listener)
 
-    sender: boids_utils.pubsub.TopicPublisher = boids_utils.pubsub.get_topic_publisher(TEST_TOPIC)
+    sender: boids_utils.pubsub.TopicPublisher = test_pubsub_broker.get_topic_publisher(TEST_TOPIC)
 
     LOGGER.debug(f'Sending message on topic: "{TEST_TOPIC}"')
     await sender.publish({'message': 'Foo'})
@@ -40,5 +37,3 @@ async def test_topic_blocking(test_config):
     message = listener.message
     assert message.value['message'] == 'Foo'
     assert message.topic == TEST_TOPIC
-
-    await boids_utils.pubsub.disconnect()
