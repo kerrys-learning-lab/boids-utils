@@ -35,7 +35,10 @@ jobs:
       actor_token: ${{ secrets.actor_token }}
 
   ref-python-package-pypi:
-    uses: kerrys-learning-lab/.github/.github/workflows/.python-package-pypi.yml@main
+    # See Trusted publishing: Support for GitHub reusable workflows
+    #     https://github.com/pypi/warehouse/issues/11096
+    # uses: kerrys-learning-lab/.github/.github/workflows/.python-package-pypi.yml@main
+    uses: ./.github/workflows/.python-package-pypi.yml
     needs:
       - ref-prerequisites
       - ref-check-repo-settings
