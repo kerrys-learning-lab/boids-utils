@@ -38,7 +38,7 @@ jobs:
     # See Trusted publishing: Support for GitHub reusable workflows
     #     https://github.com/pypi/warehouse/issues/11096
     # uses: kerrys-learning-lab/.github/.github/workflows/.python-package-pypi.yml@main
-    uses: .github/workflows/.python-package-pypi.yml
+    uses: ./.github/workflows/.python-package-pypi.yml
     needs:
       - ref-prerequisites
       - ref-check-repo-settings
