@@ -1,3 +1,10 @@
+## v1.1.2 (2023-10-29)
+
+### Fix
+
+- workflow dependencies (#10)
+- workflow dependencies (#9)
+
 ## v1.1.1 (2023-10-29)
 
 ### Fix
