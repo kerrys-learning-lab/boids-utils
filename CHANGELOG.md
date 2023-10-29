@@ -1,3 +1,9 @@
+## v1.1.0 (2023-10-29)
+
+### Feat
+
+- add command-line args to template (#7)
+
 ## v1.0.2 (2023-10-21)
 
 ### Fix
