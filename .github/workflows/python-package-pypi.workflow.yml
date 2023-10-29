@@ -27,7 +27,7 @@ on:
 
 jobs:
   ref-prerequisites:
-    uses: ./.github/workflows/.prerequisites.yml
+    uses: kerrys-learning-lab/.github/.github/workflows/.prerequisites.yml@main
 
   ref-check-repo-settings:
     uses: kerrys-learning-lab/.github/.github/workflows/.check-repo-settings.yml@main
@@ -35,7 +35,7 @@ jobs:
       actor_token: ${{ secrets.actor_token }}
 
   ref-python-package-pypi:
-    uses: ./.github/workflows/.python-package-pypi.yml
+    uses: kerrys-learning-lab/.github/.github/workflows/.python-package-pypi.yml@main
     needs:
       - ref-prerequisites
       - ref-check-repo-settings
