@@ -1,3 +1,4 @@
+''' Provides pytest utilities common to Boids applications '''
 import argparse
 import asyncio
 import logging
@@ -10,6 +11,14 @@ import boids_utils.pubsub
 import boids_utils.logging
 import boids_utils.test.containers.nats
 import boids_utils.test.containers.elasticsearch
+
+# Disable redefined-outer-name for the entire file because that's how pytest
+# fixtures work! Similarly, some test fixtures are dependencies of others,
+# even if they don't seem to be used in creation of the fixture (e.g.,
+# elasticsarch has a dependency on test_openapi_spec)
+#
+# pylint: disable=redefined-outer-name
+# pylint: disable=unused-argument
 
 TEST_CLIENT_ID: str = 'test'
 PRE_TEST_CLI_ARGS=None
@@ -30,6 +39,7 @@ docker_containers: list[testcontainers.core.container.DockerContainer] = []
 
 @pytest.fixture(scope="session")
 def event_loop():
+    ''' Creates and returns a session-scoped asyncio event loop '''
     try:
         loop = asyncio.get_running_loop()
     except RuntimeError:
@@ -39,7 +49,9 @@ def event_loop():
 
 @pytest.fixture(scope='session')
 def test_cli_args():
-    global args
+    ''' Creates and returns CLI arguments suitable for testing application
+        initialization '''
+    global args # pylint: disable=global-statement
     args = argparse.Namespace(verbose=True,
                               no_color=False,
                               openapi_spec_path='/etc/boids-api/openapi.yaml',
@@ -51,35 +63,36 @@ def test_cli_args():
                                   '/etc/boids/pubsub.yaml'
                               ])
 
-    if PRE_TEST_CLI_ARGS:
-        PRE_TEST_CLI_ARGS()
+    if callable(PRE_TEST_CLI_ARGS):
+        PRE_TEST_CLI_ARGS() # pylint: disable=not-callable
 
     boids_utils.config.process_cli_options(args)
     boids_utils.logging.process_cli_options(args, **boids_utils.config.instance)
 
-    if POST_TEST_CLI_ARGS:
-        POST_TEST_CLI_ARGS()
+    if callable(POST_TEST_CLI_ARGS):
+        POST_TEST_CLI_ARGS() # pylint: disable=not-callable
 
     return args
 
 @pytest.fixture(scope='session')
 def test_pubsub_broker(test_cli_args: argparse.Namespace,
                        event_loop: asyncio.AbstractEventLoop):
+    ''' Creates and returns a NATS testcontainer suitable for use in unit tests '''
     LOGGER.info(f'Starting pub/sub broker test container ({NATS_IMAGE})...')
     container = boids_utils.test.containers.nats.NATSContainer(NATS_IMAGE)
 
     container.start()
 
-    if PRE_TEST_PUBSUB_BROKER:
-        PRE_TEST_PUBSUB_BROKER()
+    if callable(PRE_TEST_PUBSUB_BROKER):
+        PRE_TEST_PUBSUB_BROKER() # pylint: disable=not-callable
 
     boids_utils.config.instance['pubsub']['url'] = container.get_server_url()
     boids_utils.pubsub.process_cli_options(test_cli_args,
                                            **boids_utils.config.instance)
     docker_containers.append(container)
 
-    if POST_TEST_PUBSUB_BROKER:
-        POST_TEST_PUBSUB_BROKER()
+    if callable(POST_TEST_PUBSUB_BROKER):
+        POST_TEST_PUBSUB_BROKER() # pylint: disable=not-callable
 
     event_loop.run_until_complete(boids_utils.pubsub.connect())
 
@@ -92,6 +105,7 @@ def test_pubsub_broker(test_cli_args: argparse.Namespace,
 @pytest.fixture(scope='session')
 def test_elasticsearch(test_cli_args: argparse.Namespace,
                        test_openapi_spec: boids_utils.openapi):
+    ''' Creates and returns an Elasticsearch testcontainer suitable for use in unit tests '''
     container = boids_utils.test.containers.elasticsearch.ElasticSearchContainer(ELASTICSEARCH_IMAGE)
     container.with_env("xpack.security.enabled", "false")
 
@@ -99,16 +113,16 @@ def test_elasticsearch(test_cli_args: argparse.Namespace,
 
     container.start()
 
-    if PRE_TEST_ELASTICSEARCH:
-        PRE_TEST_ELASTICSEARCH()
+    if callable(PRE_TEST_ELASTICSEARCH):
+        PRE_TEST_ELASTICSEARCH() # pylint: disable=not-callable
 
     boids_utils.config.instance['elasticsearch']['server'] = container.get_url()
     boids_utils.elastic.process_cli_options(test_cli_args,
                                             **boids_utils.config.instance)
     docker_containers.append(container)
 
-    if POST_TEST_ELASTICSEARCH:
-        POST_TEST_ELASTICSEARCH()
+    if callable(POST_TEST_ELASTICSEARCH):
+        POST_TEST_ELASTICSEARCH() # pylint: disable=not-callable
 
     yield boids_utils.elastic
 
@@ -116,13 +130,14 @@ def test_elasticsearch(test_cli_args: argparse.Namespace,
 
 @pytest.fixture(scope='session')
 def test_openapi_spec(test_cli_args: argparse.Namespace):
-    if PRE_TEST_API_SPEC:
-        PRE_TEST_API_SPEC()
+    ''' Creates and returns an OpenAPI spec suitable for use in unit tests '''
+    if callable(PRE_TEST_API_SPEC):
+        PRE_TEST_API_SPEC() # pylint: disable=not-callable
 
     boids_utils.openapi.process_cli_options(test_cli_args,
                                             **boids_utils.config.instance)
 
-    if POST_TEST_API_SPEC:
-        POST_TEST_API_SPEC()
+    if callable(POST_TEST_API_SPEC):
+        POST_TEST_API_SPEC() # pylint: disable=not-callable
 
     return boids_utils.openapi

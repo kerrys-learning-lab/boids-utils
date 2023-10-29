@@ -19,6 +19,7 @@ RUN export POETRY_HOME=/opt/poetry && \
 
 ENV WORKDIR=/opt/boids-utils
 ENV POETRY_VIRTUALENVS_CREATE=false
+ENV PYTHONPATH=${WORKDIR}/src:/usr/local/lib/python3.11/site-packages
 
 WORKDIR ${WORKDIR}
 COPY * ${WORKDIR}/

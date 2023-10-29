@@ -1,3 +1,4 @@
+''' Creates an Elasticsearch testcontainer '''
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -34,8 +35,8 @@ def _major_version_from_image_name(image_name: str) -> int:
         logging.warning("Could not determine major version from image name '%s'. Will use %s",
                         image_name, _FALLBACK_VERSION)
         return _FALLBACK_VERSION
-    else:
-        return int(regex_match.group(1))
+
+    return int(regex_match.group(1))
 
 
 def _environment_by_version(version: int) -> Dict[str, str]:
@@ -44,15 +45,14 @@ def _environment_by_version(version: int) -> Dict[str, str]:
         # This setting is needed to avoid the check for the kernel parameter
         # vm.max_map_count in the BootstrapChecks
         return {"discovery.zen.minimum_master_nodes": "1"}
-    elif version == 7:
+    if version == 7:
         return {}
-    elif version == 8:
+    if version == 8:
         # Elasticsearch uses https now by default. However, our readiness
         # check uses http, which does not work. Hence we disable security
         # which should not be an issue for our context
         return {"xpack.security.enabled": "false"}
-    else:
-        raise ValueError(f"Unknown elasticsearch version given: {version}")
+    raise ValueError(f"Unknown elasticsearch version given: {version}")
 
 
 class ElasticSearchContainer(DockerContainer):
@@ -74,7 +74,7 @@ class ElasticSearchContainer(DockerContainer):
     """
 
     def __init__(self, image: str = "elasticsearch", port: int = 9200, **kwargs) -> None:
-        super(ElasticSearchContainer, self).__init__(image, **kwargs)
+        super().__init__(image, **kwargs)
         self.port = port
         self.with_exposed_ports(self.port)
         self.with_env('transport.host', '127.0.0.1')
@@ -86,11 +86,12 @@ class ElasticSearchContainer(DockerContainer):
 
     @wait_container_is_ready(URLError)
     def _connect(self) -> None:
-        res = urllib.request.urlopen(self.get_url())
-        if res.status != 200:
-            raise Exception()
+        with urllib.request.urlopen(self.get_url()) as res:
+            if res.status != 200:
+                raise RuntimeError('Error when connecting to Elasticsearch')
 
     def get_url(self) -> str:
+        ''' Returns the URL to the test instance of Elasticsearch '''
         host = self.get_container_host_ip()
         port = self.get_exposed_port(self.port)
         return f'http://{host}:{port}'
