@@ -1,10 +1,11 @@
+''' NATS testcontainer implementation '''
 import asyncio
 import logging
 import nats
+import nats.errors
 
 import testcontainers.core.container
 import testcontainers.core.waiting_utils
-import nats.errors
 
 LOGGER = logging.getLogger(__name__)
 
@@ -22,11 +23,13 @@ class NATSContainer(testcontainers.core.container.DockerContainer):
             ...    connection = NATS.get_server_url()
     """
     def __init__(self, image: str = "nats:2.9.23", port: int = 4222, **kwargs) -> None:
-        super(NATSContainer, self).__init__(image, **kwargs)
+        super().__init__(image, **kwargs)
         self.port = port
         self.with_exposed_ports(self.port)
 
     def get_server_url(self) -> str:
+        ''' Returns the URL to the NATS testcontainer.  The return value is
+            suitable for use as-is by a client connection. '''
         host = self.get_container_host_ip()
         port = self.get_exposed_port(self.port)
         return f'nats://{host}:{port}'
