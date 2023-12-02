@@ -7,7 +7,7 @@
 import logging
 import typing
 import elasticsearch
-import boidsapi.model
+import boids_api.boids
 import boids_utils.openapi
 from .exceptions import *   # pylint: disable=wildcard-import,unused-wildcard-import
 
@@ -19,7 +19,7 @@ LOGGER = logging.getLogger(__name__)
 
 class Index:
     """ Provides CRUD operations on an Elasticsearch index. """
-    ORDER_BY_MAPPING ={
+    ORDER_BY_MAPPING = {
         'title': 'title.keyword'
     }
 
@@ -46,9 +46,10 @@ class Index:
     def save(self, data: boids_utils.openapi.OpenApiModel):
         """ Saves (indexes) the given object as a document in Elasticsearch. """
         document: dict = data.to_dict()
-        LOGGER.debug(f'Saving document {data.__class__.__name__} {data.uuid} to {self.name}')
-        self._client.index(index=self.name, document=document, id=data.uuid, refresh=True)
-
+        LOGGER.debug(
+            f'Saving document {data.__class__.__name__} {data.uuid} to {self.name}')
+        self._client.index(index=self.name, document=document,
+                           id=data.uuid, refresh=True)
 
     def get(self, uuid) -> boids_utils.openapi.OpenApiModel:
         """
@@ -56,7 +57,8 @@ class Index:
         returned using the given query.
         """
         results = self._client.search(index=self.name,
-                                      sort=Index.create_sort_critera(order_by='-modified'),
+                                      sort=Index.create_sort_critera(
+                                          order_by='-modified'),
                                       size=1,
                                       query=Index.create_search_criteria(uuid=uuid))
 
@@ -64,39 +66,44 @@ class Index:
         data = hits.get('hits', [])
 
         if len(data) == 0:
-            raise DocumentNotFoundError(f'{self.name}: No matching documents found')
+            raise DocumentNotFoundError(
+                f'{self.name}: No matching documents found')
         if len(data) > 1:
-            raise MultipleDocumentsFoundError(f'{self.name}: Found {len(data)} documents (expected 1)')
+            raise MultipleDocumentsFoundError(
+                f'{self.name}: Found {len(data)} documents (expected 1)')
 
         return self._type.from_dict(data[0]['_source'])
 
     # pylint: disable=line-too-long
     def search(self,
-               pagination: boidsapi.model.Pagination = None,
-               **kwargs) -> typing.Tuple[list[boids_utils.openapi.OpenApiModel], boidsapi.model.Pagination]:
+               pagination: boids_api.boids.Pagination = None,
+               **kwargs) -> typing.Tuple[list[boids_utils.openapi.OpenApiModel], boids_api.boids.Pagination]:
         """
         Returns OpenAPI model objects from the Elasticsearch documents in the
         given search results.
         """
-        pagination = pagination or boidsapi.model.Pagination(offset=boids_utils.openapi.instance.default_offset,
-                                                             limit=boids_utils.openapi.instance.default_limit)
+        pagination = pagination or boids_api.boids.Pagination(offset=boids_utils.openapi.instance.default_offset,
+                                                              limit=boids_utils.openapi.instance.default_limit)
         query = Index.create_search_criteria(**kwargs)
         results: dict = self._client.search(index=self.name,
                                             from_=pagination.offset,
                                             size=pagination.limit,
-                                            sort=Index.create_sort_critera(pagination.order_by),
+                                            sort=Index.create_sort_critera(
+                                                pagination.order_by),
                                             query=query)
         hits: dict = results.get('hits', {})
         data = hits.get('hits', [])
-        hits_total =   hits.get('total', {}).get('value', 0)
-        LOGGER.debug(f'{self.name}: Returning {len(data)} out of {hits_total} hits')
+        hits_total = hits.get('total', {}).get('value', 0)
+        LOGGER.debug(
+            f'{self.name}: Returning {len(data)} out of {hits_total} hits')
 
         data = [self._type.from_dict(v['_source']) for v in data]
 
         pagination.total = hits_total
 
         if pagination.offset > pagination.total:
-            raise IndexError(f'Requested pagination offset ({pagination.offset}) greater than total ({pagination.total})')
+            raise IndexError(
+                f'Requested pagination offset ({pagination.offset}) greater than total ({pagination.total})')
 
         return data, pagination
 
@@ -114,7 +121,6 @@ class Index:
             return {'bool': {'must': must}}
 
         return {'match_all': {}}
-
 
     @staticmethod
     def create_sort_critera(order_by: str = None):
@@ -139,4 +145,5 @@ class Index:
         dummy = instance_type()
         for field in Index.REQUIRED_FIELDS:
             if field not in dummy.attribute_map:
-                raise ConfigurationError(f'Expected model {dummy.__class__.__name__} to have a "{field}" field')
+                raise ConfigurationError(
+                    f'Expected model {dummy.__class__.__name__} to have a "{field}" field')

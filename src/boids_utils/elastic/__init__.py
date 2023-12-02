@@ -4,12 +4,13 @@ import logging
 import backoff
 import elasticsearch
 import elastic_transport
-import boidsapi.model
+import boids_api.boids
 import boids_utils.openapi
 import boids_utils.config
 from .exceptions import *
 from .index import Index
 from .manager import Manager
+
 
 def add_cli_options(parser: argparse.ArgumentParser):
     """
@@ -20,6 +21,7 @@ def add_cli_options(parser: argparse.ArgumentParser):
     group.add_argument('--elastic-skip-init',
                        action='store_true',
                        help='Skip idempotent creation of indices/search-templates')
+
 
 def process_cli_options(args: argparse.Namespace, **kwargs):
     """
@@ -35,8 +37,8 @@ def process_cli_options(args: argparse.Namespace, **kwargs):
         Manager.create_search_templates(elastic_url, **elastic_config)
 
 
-
 LOGGER = logging.getLogger(__name__)
+
 
 class Indices:
     """ Collection of *named* Index objects """
@@ -44,7 +46,7 @@ class Indices:
     def __init__(self) -> None:
         self.connection = None
         self._session_configuration = Index('boids.sessions',
-                                            boidsapi.model.SessionConfigurationStatus)
+                                            boids_api.boids.SessionConfigurationStatus)
 
     def on_connected(self, client: elasticsearch.Elasticsearch):
         """ Called by the elastic module upon successful connection to
@@ -63,8 +65,10 @@ class Indices:
         if not self.connection:
             raise ConnectionError('Not connected')
 
+
 connection = None       # pylint: disable=invalid-name
 indices = Indices()     # pylint: disable=invalid-name
+
 
 def connect() -> elasticsearch.Elasticsearch:
     """ Connects to Elasticsearch.
@@ -86,7 +90,8 @@ def connect() -> elasticsearch.Elasticsearch:
 
         return connection
     except KeyError as ex:
-        raise ConfigurationError(str(ex))   # pylint: disable=raise-missing-from
+        # pylint: disable-next=raise-missing-from
+        raise ConfigurationError(str(ex))
     except elastic_transport.TransportError as ex:
         raise ConnectionError(str(ex))  # pylint: disable=raise-missing-from
 
