@@ -4,18 +4,19 @@ import logging
 import os
 import typing
 import yaml
-import boidsapi.model
-import boidsapi.model.base_model_
+import boids_api.boids
+import boids_api.boids.base_model
 
-OpenApiModel = boidsapi.model.base_model_.Model
+OpenApiModel = boids_api.boids.base_model.Model
 
 LOGGER = logging.getLogger(__name__)
+
 
 class Spec:
     """ Represents and OpenAPI specification loaded from YAML """
 
     PATH_MAPPING = {
-        boidsapi.model.SessionConfiguration: "#/components/schemas/SessionConfiguration"
+        boids_api.boids.SessionConfiguration: "#/components/schemas/SessionConfiguration"
     }
 
     def __init__(self, path: str) -> None:
@@ -25,10 +26,12 @@ class Spec:
         self._default_offset = None
         self._default_limit = None
 
-        boidsapi_yaml_path = os.path.join(self.specification_dir, self.specification_file)
+        boidsapi_yaml_path = os.path.join(
+            self.specification_dir, self.specification_file)
 
         if not os.path.exists(boidsapi_yaml_path):
-            raise RuntimeError(f"Unable to locate Boids API YAML: {boidsapi_yaml_path}")
+            raise RuntimeError(
+                f"Unable to locate Boids API YAML: {boidsapi_yaml_path}")
 
         with open(boidsapi_yaml_path, 'r', encoding='utf-8') as yaml_content:
             self._raw = yaml.safe_load(yaml_content)
@@ -76,7 +79,8 @@ class Spec:
     def __getitem__(self, key):
         keys: list = key.split('/')
         if keys.pop(0) != '#':
-            raise RuntimeError(f'Invalid item path (must start with "#"): {key}')
+            raise RuntimeError(
+                f'Invalid item path (must start with "#"): {key}')
 
         value = self._raw
         for k in keys:
@@ -90,7 +94,7 @@ class Spec:
             if reference:
                 return self._resolve(self[reference])
 
-            return { k: self._resolve(v) for k, v in value.items()}
+            return {k: self._resolve(v) for k, v in value.items()}
 
         if isinstance(value, list):
             return [self._resolve(v) for v in value]
@@ -112,7 +116,7 @@ class Spec:
 
         return clss.from_dict(expanded)
 
-    def _expand_defaults(self, destination: typing.Union[dict,list], source_spec: dict) -> dict:
+    def _expand_defaults(self, destination: typing.Union[dict, list], source_spec: dict) -> dict:
         if source_spec['type'] == 'object':
             object_properties_spec: dict = source_spec.get('properties', {})
             for attr_name, attr_spec in object_properties_spec.items():
@@ -130,26 +134,31 @@ class Spec:
 
         return source_spec.get('default')
 
-# pylint: disable-next=invalid-name
-def to_SessionState(value: str) -> boidsapi.model.SessionState:
+
+def to_SessionState(value: str) -> boids_api.boids.SessionState:  # pylint: disable=invalid-name
     """ Converts the given string value to a SessionState enum """
     try:
-        return getattr(boidsapi.model.SessionState, value) if value is not None else None
+        return getattr(boids_api.boids.SessionState, value) if value is not None else None
     except AttributeError:
         # pylint: disable-next=raise-missing-from
-        raise RuntimeError(f'Could not convert "{value}" to boidsapi.boids.SessionState')
+        raise RuntimeError(
+            f'Could not convert "{value}" to boidsapi.boids.SessionState')
+
 
 def merge_models(dest: OpenApiModel, source: OpenApiModel) -> OpenApiModel:
     """ Non-destructively merges source into destination """
     if type(dest) is type(source):
-        raise RuntimeError(f"Merging of mismatched types not allowed({type(dest)} vs {type(source)})")
+        raise RuntimeError(
+            f"Merging of mismatched types not allowed({type(dest)} vs {type(source)})")
     for field_name in dest.openapi_types:
         if field_name in source:
             updated_value = getattr(source, field_name)
             if isinstance(updated_value, OpenApiModel):
-                updated_value = merge_models(getattr(dest, field_name), updated_value)
+                updated_value = merge_models(
+                    getattr(dest, field_name), updated_value)
             setattr(dest, field_name, updated_value)
     return dest
+
 
 def _merge(destination: dict, source: dict) -> dict:
     result = dict(destination)
@@ -160,10 +169,12 @@ def _merge(destination: dict, source: dict) -> dict:
 
     return result
 
+
 # pylint: disable-next=invalid-name
 instance: Spec = None
 
-DEFAULT_OPENAPI_SPEC_PATH='/etc/boids-api/openapi.yaml'
+DEFAULT_OPENAPI_SPEC_PATH = '/etc/boids-api/openapi.yaml'
+
 
 def add_cli_options(parser: argparse.ArgumentParser):
     """
@@ -172,8 +183,9 @@ def add_cli_options(parser: argparse.ArgumentParser):
     """
     openapi_group = parser.add_argument_group(title='OpenAPI configuration')
     openapi_group.add_argument('--openapi-spec-path',
-                              default=DEFAULT_OPENAPI_SPEC_PATH,
-                              help=f'Path to OpenAPI specification.  Default: {DEFAULT_OPENAPI_SPEC_PATH}')
+                               default=DEFAULT_OPENAPI_SPEC_PATH,
+                               help=f'Path to OpenAPI specification.  Default: {DEFAULT_OPENAPI_SPEC_PATH}')
+
 
 def process_cli_options(args: argparse.Namespace, **_):
     """

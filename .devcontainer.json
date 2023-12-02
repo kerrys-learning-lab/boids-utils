@@ -1,11 +1,9 @@
 {
-	"name": "Ubuntu",
-	"dockerComposeFile": [
-		"../docker-compose.yml"
-	],
+	"name": "boids-utils",
+	"dockerComposeFile": "../docker-compose.yml",
+	"service": "boids-utils",
 	"workspaceFolder": "/opt/boids-utils",
 	"remoteUser": "python",
-	"service": "boids-utils",
 	"customizations": {
 		"vscode": {
 			"extensions": [
