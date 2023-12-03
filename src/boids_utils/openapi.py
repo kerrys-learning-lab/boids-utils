@@ -19,23 +19,13 @@ class Spec:
         boids_api.boids.SessionConfiguration: "#/components/schemas/SessionConfiguration"
     }
 
-    def __init__(self, path: str) -> None:
-        self._path = path
-        self.specification_dir = '/etc/boids-api'
-        self.specification_file = 'openapi.yaml'
+    def __init__(self, args: argparse.Namespace) -> None:
+        self._path, self._raw = self._load_spec(args)
+
         self._default_offset = None
         self._default_limit = None
 
-        boidsapi_yaml_path = os.path.join(
-            self.specification_dir, self.specification_file)
-
-        if not os.path.exists(boidsapi_yaml_path):
-            raise RuntimeError(
-                f"Unable to locate Boids API YAML: {boidsapi_yaml_path}")
-
-        with open(boidsapi_yaml_path, 'r', encoding='utf-8') as yaml_content:
-            self._raw = yaml.safe_load(yaml_content)
-            self._raw = self._resolve(self._raw)
+        self._raw = self._resolve(self._raw)
 
     @property
     def path(self) -> str:
@@ -134,6 +124,28 @@ class Spec:
 
         return source_spec.get('default')
 
+    def _load_spec(self, args: argparse.Namespace) -> None:
+        paths_to_check = []
+        if args.openapi_spec_path:
+            paths_to_check.append(args.openapi_spec_path)
+        else:
+            if not args.openapi_skip_default_spec_path:
+                paths_to_check.append('/etc/boids-api/openapi.yaml')
+            if not args.openapi_skip_module_spec_path:
+                path = boids_api.__file__
+                path = os.path.dirname(path)
+                path = os.path.join(path, 'openapi', 'openapi.yaml')
+                paths_to_check.append(path)
+
+        for path in paths_to_check:
+            LOGGER.debug(f'Looking for OpenAPI spec at {path}')
+            if os.path.exists(path):
+                with open(path, 'r', encoding='utf-8') as yaml_content:
+                    LOGGER.info(f'Using OpenAPI spec at {path}')
+                    return (path, yaml.safe_load(yaml_content))
+
+        raise RuntimeError("Unable to locate Boids API YAML")
+
 
 def to_SessionState(value: str) -> boids_api.boids.SessionState:  # pylint: disable=invalid-name
     """ Converts the given string value to a SessionState enum """
@@ -173,8 +185,6 @@ def _merge(destination: dict, source: dict) -> dict:
 # pylint: disable-next=invalid-name
 instance: Spec = None
 
-DEFAULT_OPENAPI_SPEC_PATH = '/etc/boids-api/openapi.yaml'
-
 
 def add_cli_options(parser: argparse.ArgumentParser):
     """
@@ -183,8 +193,14 @@ def add_cli_options(parser: argparse.ArgumentParser):
     """
     openapi_group = parser.add_argument_group(title='OpenAPI configuration')
     openapi_group.add_argument('--openapi-spec-path',
-                               default=DEFAULT_OPENAPI_SPEC_PATH,
-                               help=f'Path to OpenAPI specification.  Default: {DEFAULT_OPENAPI_SPEC_PATH}')
+                               default=None,
+                               help='Path to OpenAPI specification.  If specified, skips other search paths.')
+    openapi_group.add_argument('--openapi-skip-default-spec-path',
+                               action='store_true',
+                               help='Skips the default OpenAPI spec path (/etc/boids-api/openapi.yaml)')
+    openapi_group.add_argument('--openapi-skip-module-spec-path',
+                               action='store_true',
+                               help='Skips searching for openapi.yaml within the boids_api python module')
 
 
 def process_cli_options(args: argparse.Namespace, **_):
@@ -194,6 +210,5 @@ def process_cli_options(args: argparse.Namespace, **_):
     """
     # pylint: disable-next=global-statement,invalid-name
     global instance
-    path = args.openapi_spec_path
-    instance = Spec(path)
+    instance = Spec(args)
     return instance
